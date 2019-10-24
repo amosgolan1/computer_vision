@@ -1,26 +1,26 @@
-import cv2
-import numpy as np
 import imutils
+import numpy as np
+import cv2
 
-img = cv2.imread('images/breath_1.png')
-ratio = img.shape[0] / 300.0
-img = imutils.resize(img, height = 300)
 
-gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-blur=cv2.GaussianBlur(gray, (11, 11), 0)
+img = cv2.imread('breaths_mask.png')
+ratio = img.shape[0] / 500.0
+img = imutils.resize(img, height = 500)
 
-edges = cv2.Canny(gray,50,150)
+output = img.copy()
 
-# edges = cv2.Canny(blur,50,150,apertureSize = 3)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+edges = cv2.Canny(gray,50,150,apertureSize = 3)
 
-minLineLength = 1
-maxLineGap = 1
-lines = cv2.HoughLinesP(edges,1,np.pi/180,100,minLineLength,maxLineGap)
+minLineLength=100
+lines = cv2.HoughLinesP(image=edges,rho=1,theta=np.pi/180, threshold=100,lines=np.array([]), minLineLength=minLineLength,maxLineGap=200)
+# ensure at least some lines were found
+if lines is not None:
+	a,b,c = lines.shape
+	for i in range(a):
+		cv2.line(output,(lines[i][0][0], lines[i][0][1]), (lines[i][0][2], lines[i][0][3]), (0, 0, 255), 3, cv2.LINE_AA)
+    
+	cv2.imshow("output", np.hstack([img, output]))
+	cv2.waitKey(0)
 
-for x1,y1,x2,y2 in lines[0]:
-	cv2.line(img,(x1,y1),(x2,y2),(0,255,0),2)
-	print("line")
-cv2.imshow('houghlines.png',img)	
-cv2.imshow("edges", edges)
-cv2.imshow("blur", blur)
-cv2.waitKey(0)
+	
